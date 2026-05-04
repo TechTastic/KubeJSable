@@ -3,10 +3,13 @@ package io.github.techtastic.kubejsable;
 import dev.latvian.mods.kubejs.event.EventGroupRegistry;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
 import dev.latvian.mods.kubejs.script.BindingRegistry;
+import dev.latvian.mods.kubejs.script.TypeWrapperRegistry;
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.kubejs.typings.Param;
-import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.SubLevelHelper;
+import dev.ryanhcode.sable.companion.math.BoundingBox3i;
+import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
@@ -15,6 +18,8 @@ import io.github.techtastic.kubejsable.bindings.*;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import java.util.Collection;
@@ -29,6 +34,11 @@ public class KubeJSablePlugin implements KubeJSPlugin {
 
     @Override
     public void registerBindings(BindingRegistry bindings) {
+        bindings.add("BoundingBox3i", BoundingBox3i.class);
+        bindings.add("BoundingBox3ic", BoundingBox3ic.class);
+        bindings.add("Vector3d", Vector3d.class);
+        bindings.add("Vector3dc", Vector3dc.class);
+
         switch (bindings.type()) {
             case CLIENT -> {
                 bindings.add("DimensionPhysics", new DimensionPhysicsJS<ClientLevel>());
@@ -55,8 +65,8 @@ public class KubeJSablePlugin implements KubeJSPlugin {
                                     @Param(name = "position", value = "The position to retrieve the air pressure at")
                             }
                     )
-                    public double getAirPressure(ServerLevel level, Vector3dc position) {
-                        return DimensionPhysicsData.getAirPressure(level, position);
+                    public double getAirPressure(ServerLevel level, Vec3 position) {
+                        return DimensionPhysicsData.getAirPressure(level, JOMLConversion.toJOML(position));
                     }
                 });
                 bindings.add("SubLevelContainer", new SubLevelContainerJS<ServerLevel>());
@@ -71,14 +81,19 @@ public class KubeJSablePlugin implements KubeJSPlugin {
             }
             case STARTUP -> {
                 bindings.add("SubLevelHelper", new SubLevelHelperJS<SubLevel, Level>() {
-                    public void registerWindProvider(BiFunction<Vector3dc, Level, Vector3dc> function) {
-                        SubLevelHelper.registerWindProvider(function);
+                    public void registerWindProvider(BiFunction<Vector3dc, Level, Vec3> function) {
+                        SubLevelHelper.registerWindProvider((vec, level) -> JOMLConversion.toJOML(function.apply(vec, level)));
                     }
                 });
                 bindings.add("SubLevelHeatMapManager", new SubLevelHeatMapManagerJS());
                 bindings.add("Sable", new SableJS<>());
             }
         }
+    }
+
+    @Override
+    public void registerTypeWrappers(TypeWrapperRegistry registry) {
+        KubeJSPlugin.super.registerTypeWrappers(registry);
     }
 
     @Override

@@ -1,10 +1,12 @@
 package io.github.techtastic.kubejsable.bindings;
 
 import dev.ryanhcode.sable.api.SubLevelHelper;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
@@ -17,8 +19,8 @@ public class SubLevelHelperJS<S extends SubLevel, L extends Level> {
         return SubLevelHelper.getConnectedChain(subLevel);
     }
 
-    public Vector3d getVelocityRelativeToAir(L level, Vector3dc pos, @Nullable Vector3d dest) {
-        return SubLevelHelper.getVelocityRelativeToAir(level, pos, Objects.requireNonNullElseGet(dest, Vector3d::new));
+    public Vec3 getVelocityRelativeToAir(L level, Vec3 pos) {
+        return JOMLConversion.toMojang(SubLevelHelper.getVelocityRelativeToAir(level, JOMLConversion.toJOML(pos), new Vector3d()));
     }
 
     public void popEntityLocal(S subLevel, Entity player) {

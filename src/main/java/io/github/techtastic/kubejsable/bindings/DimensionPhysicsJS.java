@@ -2,9 +2,11 @@ package io.github.techtastic.kubejsable.bindings;
 
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.kubejs.typings.Param;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysics;
 import dev.ryanhcode.sable.physics.config.dimension_physics.DimensionPhysicsData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
@@ -45,7 +47,7 @@ public class DimensionPhysicsJS<L extends Level> {
                     @Param(name = "level", value = "The Level to retrieve the gravity vector from")
             }
     )
-    public Vector3dc getGravity(L level) {
-        return DimensionPhysicsData.getGravity(level);
+    public Vec3 getGravity(L level) {
+        return JOMLConversion.toMojang(DimensionPhysicsData.getGravity(level));
     }
 }
